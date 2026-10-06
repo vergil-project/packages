@@ -20,3 +20,8 @@ jobs:
     with:
       language: base
       container-tag: "latest"
+    # The org GitHub App (APP_CLIENT_ID / APP_PRIVATE_KEY) dispatches
+    # `package-released` to this repo's publish-index after a packaged release
+    # (spec §8.2). The signing secrets come from the main-only
+    # `package-signing` environment, not from here.
+    secrets: inherit

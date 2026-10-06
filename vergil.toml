@@ -14,3 +14,14 @@ docs = false
 
 [dependencies]
 vergil = "v2.1"
+
+# The repository's one product: the noarch keyring package (spec §7.1). It is
+# built from the overlay alone (packaging/nfpm.overlay.yaml), once, as deb `all`
+# and rpm `noarch`, and install-tested on every default target.
+[package]
+builder = "staged"
+vendor = "vergil"
+name = "vergil-archive-keyring"
+summary = "Signing key and repository configuration for the vergil-project package repository"
+smoke = "test -s /usr/share/keyrings/vergil-archive-keyring.asc"
+noarch = true

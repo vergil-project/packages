@@ -1,0 +1,14 @@
+# Products indexed into the vergil package repository (spec §7.1, §7.2).
+# `vrg-package index` (run by .github/workflows/publish-index.yml) collects the
+# stable releases of each product, verifies them, applies retention and
+# publishes the signed apt/dnf site to GitHub Pages.
+vendor = "vergil"
+products = [
+  "vergil-project/packages",
+  "vergil-project/vergil-python",
+  "vergil-project/vergil-tooling",
+]
+
+[retention]
+keep = 3   # releases kept per major.minor line
+lines = 2  # newest major.minor lines kept per product
