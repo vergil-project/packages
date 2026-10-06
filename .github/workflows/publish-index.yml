@@ -1,0 +1,26 @@
+name: Publish package index
+
+# Rebuild, sign and deploy the vergil apt/dnf repository from the product
+# releases listed in packages.toml (spec §7.2). Product releases dispatch
+# `package-released`; the weekly schedule reconciles a missed dispatch. Both
+# run on the default branch (develop), which is the only branch the
+# `index-signing` environment admits (spec §7.4).
+
+on:
+  repository_dispatch:
+    types: [package-released]
+  workflow_dispatch: {}
+  schedule:
+    - cron: "17 4 * * 1"  # weekly reconcile (spec §7.2)
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+  attestations: read
+
+jobs:
+  index:
+    uses: vergil-project/vergil-actions/.github/workflows/publish-index.yml@v2.1
+    # No secrets passed: the signing secrets come from the develop-only
+    # `index-signing` environment inside the reusable workflow (spec §7.4).
