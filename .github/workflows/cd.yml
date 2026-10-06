@@ -20,11 +20,9 @@ jobs:
     with:
       language: base
       container-tag: "latest"
-    # The org GitHub App (APP_CLIENT_ID / APP_PRIVATE_KEY) dispatches
-    # `package-released` to this repo's publish-index after a packaged release
-    # (spec §8.2). The signing secrets come from the main-only
-    # `package-signing` environment, not from here. Pass only what is needed
-    # (least privilege; Semgrep secrets-inherit).
-    secrets:
-      APP_CLIENT_ID: ${{ secrets.APP_CLIENT_ID }}
-      APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
+    # `inherit` (not an explicit map) is required: with an explicit map the
+    # reusable workflow's package-sign job saw an empty PACKAGE_SIGNING_KEY from
+    # its `package-signing` environment (vergil-project/packages#6). The callee
+    # is first-party (same org); it also needs APP_CLIENT_ID / APP_PRIVATE_KEY
+    # for the package-released dispatch (spec §8.2).
+    secrets: inherit  # nosemgrep: yaml.github-actions.security.secrets-inherit.secrets-inherit
