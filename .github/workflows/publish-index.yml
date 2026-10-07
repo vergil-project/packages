@@ -22,5 +22,8 @@ permissions:
 jobs:
   index:
     uses: vergil-project/vergil-actions/.github/workflows/publish-index.yml@v2.1
-    # No secrets passed: the signing secrets come from the develop-only
-    # `index-signing` environment inside the reusable workflow (spec §7.4).
+    # The signing secrets come from the develop-only `index-signing` environment
+    # inside the reusable workflow (spec §7.4). `inherit` is required for those
+    # environment secrets to reach it (vergil-project/packages#6); the callee is
+    # first-party (same org).
+    secrets: inherit  # nosemgrep: yaml.github-actions.security.secrets-inherit.secrets-inherit
