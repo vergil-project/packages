@@ -15,6 +15,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 - keyring product and index configuration (#3)
 
+## [1.1.0] - 2026-10-06 (not published)
+
+Never tagged or published: the release's `package-sign` job could not read the
+signing key (#6). Its changes ship in 1.1.1.
+
 ## [1.0.0] - 2026-10-05
 
 ### Chores
