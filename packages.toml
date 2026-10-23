@@ -12,3 +12,7 @@ products = [
 [retention]
 keep = 3   # releases kept per major.minor line
 lines = 2  # newest major.minor lines kept per product
+# Exact package names dropped from the index (every format and arch).
+# vergil-python3.14.8 is the legacy per-patch runtime from vergil-python@v1.0.0,
+# superseded by the per-series vergil-python3.14 (vergil-project/vergil-python#37).
+retire = ["vergil-python3.14.8"]
