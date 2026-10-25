@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+# Repository-specific validation, run by `vrg-validate` as its final (custom)
+# stage. Validates packages.toml with `vrg-package index --check-config` so an
+# invalid index configuration fails validation locally and in PR CI, instead of
+# surfacing only when publish-index runs. The check is offline: it parses and
+# validates the config only (no network, keys or output); whether `retire` names
+# exist in the live index is left to the index build.
+set -euo pipefail
+
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+repo_root="$(cd "${script_dir}/../.." && pwd)"
+config="${repo_root}/packages.toml"
+
+if ! command -v vrg-package >/dev/null 2>&1; then
+  echo "validate-custom: vrg-package is not on PATH; run via vrg-container-run -- vrg-validate" >&2
+  exit 1
+fi
+
+if [[ ! -f "${config}" ]]; then
+  echo "validate-custom: ${config} not found" >&2
+  exit 1
+fi
+
+if ! vrg-package index --config "${config}" --check-config; then
+  echo "validate-custom: ${config} is invalid (vrg-package index --check-config failed)" >&2
+  exit 1
+fi
