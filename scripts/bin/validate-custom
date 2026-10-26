@@ -5,6 +5,10 @@
 # surfacing only when publish-index runs. The check is offline: it parses and
 # validates the config only (no network, keys or output); whether `retire` names
 # exist in the live index is left to the index build.
+#
+# In PR CI (vergil-actions v2.1.58 and later) this script runs as the
+# `quality / custom` job; its log is kept as `quality-custom.log` in the
+# `quality / evidence` artifact.
 set -euo pipefail
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
