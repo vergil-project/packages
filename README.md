@@ -20,8 +20,8 @@ a host to trust and use the repository.
 ## Status
 
 Live. The index is published at <https://vergil-project.github.io/packages>
-and serves `vergil-archive-keyring`, `vergil-python3.14.8` and
-`vergil-tooling`.
+and serves `vergil-archive-keyring`, the per-series `vergil-python<X.Y>`
+runtimes (`vergil-python3.14`, `vergil-python3.15`) and `vergil-tooling`.
 
 ## Overview
 
@@ -35,7 +35,7 @@ Indexed products:
 | Product | Package |
 |---|---|
 | [vergil-project/packages](https://github.com/vergil-project/packages) | `vergil-archive-keyring` |
-| [vergil-project/vergil-python](https://github.com/vergil-project/vergil-python) | `vergil-python3.X.Y` (pinned Python runtime) |
+| [vergil-project/vergil-python](https://github.com/vergil-project/vergil-python) | `vergil-python<X.Y>`, one per listed CPython series (for example `vergil-python3.14`, `vergil-python3.15`) |
 | [vergil-project/vergil-tooling](https://github.com/vergil-project/vergil-tooling) | `vergil-tooling` |
 
 Supported targets: Ubuntu 24.04 (`noble`) and 26.04 (`resolute`), and RHEL 9
@@ -151,8 +151,9 @@ Paths under <https://vergil-project.github.io/packages>:
 
 ```text
 VERSION, vergil.toml        a normal released repo; [package] builds the keyring
-packages.toml               products to index, and retention (keep 3 releases
-                            per line, the newest 2 major.minor lines)
+packages.toml               products to index, and retention (keep 1 release
+                            per line, an index-size stopgap, and the newest
+                            2 major.minor lines)
 keys/vergil.asc             the public key (primary + current signing subkey)
 packaging/                  nFPM overlay and maintainer scripts for the keyring
 .github/workflows/          ci.yml (PR gate, incl. package build/install tests),
