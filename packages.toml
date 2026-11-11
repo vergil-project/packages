@@ -1,7 +1,8 @@
 # Products indexed into the vergil package repository (spec §7.1, §7.2).
-# `vrg-package index` (run by .github/workflows/publish-index.yml) collects the
-# stable releases of each product, verifies them, applies retention and
-# publishes the signed apt/dnf site to GitHub Pages.
+# `vrg-package index` (run by .github/workflows/publish-index.yml) first selects
+# the stable releases of each product that retention keeps, then downloads only
+# those, drops the `retire` packages, verifies what remains and publishes the
+# signed apt/dnf site to GitHub Pages.
 vendor = "vergil"
 products = [
   "vergil-project/packages",
