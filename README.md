@@ -10,14 +10,18 @@ a host to trust and use the repository.
 - [Status](#status)
 - [Overview](#overview)
 - [Using the repository](#using-the-repository)
+- [Site layout](#site-layout)
 - [Repository layout](#repository-layout)
 - [How the index is published](#how-the-index-is-published)
+- [Signing](#signing)
+- [Adding a product](#adding-a-product)
 - [License](#license)
 
 ## Status
 
-Early development. The index is published once the first product release has
-been indexed.
+Live. The index is published at <https://vergil-project.github.io/packages>
+and serves `vergil-archive-keyring`, the per-series `vergil-python<X.Y>`
+runtimes (`vergil-python3.14`, `vergil-python3.15`) and `vergil-tooling`.
 
 ## Overview
 
@@ -31,7 +35,7 @@ Indexed products:
 | Product | Package |
 |---|---|
 | [vergil-project/packages](https://github.com/vergil-project/packages) | `vergil-archive-keyring` |
-| [vergil-project/vergil-python](https://github.com/vergil-project/vergil-python) | `vergil-python3.X.Y` (pinned Python runtime) |
+| [vergil-project/vergil-python](https://github.com/vergil-project/vergil-python) | `vergil-python<X.Y>`, one per listed CPython series (for example `vergil-python3.14`, `vergil-python3.15`) |
 | [vergil-project/vergil-tooling](https://github.com/vergil-project/vergil-tooling) | `vergil-tooling` |
 
 Supported targets: Ubuntu 24.04 (`noble`) and 26.04 (`resolute`), and RHEL 9
@@ -109,8 +113,13 @@ sudo dnf install -y vergil-archive-keyring
 sudo rm -f /etc/yum.repos.d/vergil-bootstrap.repo /etc/pki/rpm-gpg/RPM-GPG-KEY-vergil-bootstrap
 ```
 
-On a vergil-managed VM, `vrg-package` performs this bootstrap itself and refuses
-any key whose primary fingerprint differs from the pinned one.
+On a vergil-managed VM you do not run this by hand: `vrg-vm create` and
+`vrg-vm update` perform the bootstrap when they install a released
+vergil-tooling, and refuse any key whose primary fingerprint differs from the
+one pinned in vergil-tooling. Re-running them is idempotent: stale bootstrap
+files are cleaned up first, and a host whose keyring package, key and source
+are already in place skips the bootstrap after checking the installed key
+against the pinned fingerprint.
 
 #### Hosts pinned to a minor RHEL release
 
@@ -128,12 +137,23 @@ host, replace `$releasever` with the major version (`9` or `10`) in
 `/etc/yum.repos.d/vergil.repo` (and in the bootstrap repo file above). The repo
 file is a `config(noreplace)` file, so the edit survives keyring upgrades.
 
+## Site layout
+
+Paths under <https://vergil-project.github.io/packages>:
+
+| Path | Contents |
+|---|---|
+| `/deb` | apt repository: suites `noble` and `resolute`, component `main`, architectures `amd64` and `arm64` |
+| `/rpm/el9/{x86_64,aarch64}`, `/rpm/el10/{x86_64,aarch64}` | dnf repositories, one per RHEL major release and architecture |
+| `/keys/vergil.asc` | the public signing key (primary + current signing subkey) |
+
 ## Repository layout
 
 ```text
 VERSION, vergil.toml        a normal released repo; [package] builds the keyring
-packages.toml               products to index, and retention (keep 3 releases
-                            per line, the newest 2 major.minor lines)
+packages.toml               products to index, and retention (keep 2 releases
+                            per line, so an index cached before a release
+                            still finds its files, and the newest 2 lines)
 keys/vergil.asc             the public key (primary + current signing subkey)
 packaging/                  nFPM overlay and maintainer scripts for the keyring
 .github/workflows/          ci.yml (PR gate, incl. package build/install tests),
@@ -144,11 +164,63 @@ packaging/                  nFPM overlay and maintainer scripts for the keyring
 
 `publish-index.yml` rebuilds the whole site from the product releases each time
 it runs: when a product release dispatches `package-released`, on manual
-dispatch, and weekly to reconcile a missed dispatch. Before indexing anything
+dispatch, and weekly to reconcile a missed dispatch. Each rebuild replaces the
+whole site, so the pool holds only the releases `packages.toml`'s retention
+keeps: the newest two releases of each line. Pages caches the index for up to ten
+minutes, and keeping the previous release means a client reading an index from
+before a release can still download the files it names. Before indexing anything
 it verifies every asset's build attestation (signed by vergil-actions'
 `cd-release.yml` on `main`) and every `.rpm`'s signature, then writes and signs
 the apt and dnf metadata and deploys to GitHub Pages. It signs in the
 `index-signing` environment, which only the `develop` branch can use.
+
+## Signing
+
+Two signing steps use the repository key, each in its own GitHub environment:
+
+- **Index signing.** `publish-index.yml` signs the apt and dnf metadata in the
+  `index-signing` environment (`develop` only). Its call to the reusable
+  workflow must use `secrets: inherit`: environment secrets reach a job in a
+  cross-repo reusable workflow only that way, and an explicit secrets map
+  leaves them empty ([#6](https://github.com/vergil-project/packages/issues/6)).
+- **Package signing.** The `vergil-archive-keyring` release itself is signed by
+  `cd-release.yml`'s package-sign job in the `package-signing` environment,
+  which only `main` can use. `cd.yml` passes `secrets: inherit` for the same
+  reason.
+
+## Adding a product
+
+To have a product's packages indexed here:
+
+1. **Declare its package.** The product repository has a `[package]` table in
+   its `vergil.toml`, so its release pipeline builds `.deb`/`.rpm` packages and
+   attaches them, with a `packages-manifest.json`, to the GitHub Release.
+2. **Release through `cd-release.yml`.** Its `cd.yml` calls
+   `vergil-project/vergil-actions/.github/workflows/cd-release.yml@v2.1` on
+   `main` with:
+
+   ```yaml
+   secrets: inherit  # nosemgrep: yaml.github-actions.security.secrets-inherit.secrets-inherit
+   ```
+
+   An explicit secrets map leaves the package-sign job's `PACKAGE_SIGNING_KEY`
+   empty, so `inherit` is required.
+3. **Configure secrets.** The product repository has a `package-signing`
+   environment restricted to `main` that holds `PACKAGE_SIGNING_KEY`, and the
+   `APP_CLIENT_ID` / `APP_PRIVATE_KEY` secrets that `cd-release.yml` uses to
+   dispatch `package-released` to this repository.
+4. **List it here.** Add `<org>/<repo>` to `products` in
+   [`packages.toml`](packages.toml) and merge the change. The next
+   `publish-index.yml` run (dispatched by the product's next release, run
+   manually, or the weekly reconcile) picks it up.
+
+Only stable `vX.Y.Z` releases are indexed: drafts, prereleases and `develop-*`
+tags are skipped, as are older releases without a `packages-manifest.json`. An
+asset passes attestation verification only if it was built by vergil-actions'
+`cd-release.yml` from `main`, and every `.rpm` must also carry a valid
+signature from the repository key. A verification failure fails the whole
+index run rather than skipping the asset, so a product must not publish
+stable package releases from any other source.
 
 ## License
 

@@ -19,7 +19,6 @@ jobs:
     uses: vergil-project/vergil-actions/.github/workflows/cd-release.yml@v2.1
     with:
       language: base
-      container-tag: "latest"
     # `inherit` (not an explicit map) is required: with an explicit map the
     # reusable workflow's package-sign job saw an empty PACKAGE_SIGNING_KEY from
     # its `package-signing` environment (vergil-project/packages#6). The callee

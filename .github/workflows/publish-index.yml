@@ -1,4 +1,5 @@
 name: Publish package index
+run-name: Publish package index (${{ github.event.client_payload.product || github.event_name }})
 
 # Rebuild, sign and deploy the vergil apt/dnf repository from the product
 # releases listed in packages.toml (spec §7.2). Product releases dispatch
