@@ -151,9 +151,9 @@ Paths under <https://vergil-project.github.io/packages>:
 
 ```text
 VERSION, vergil.toml        a normal released repo; [package] builds the keyring
-packages.toml               products to index, and retention (keep 1 release
-                            per line, an index-size stopgap, and the newest
-                            2 major.minor lines)
+packages.toml               products to index, and retention (keep 2 releases
+                            per line, so an index cached before a release
+                            still finds its files, and the newest 2 lines)
 keys/vergil.asc             the public key (primary + current signing subkey)
 packaging/                  nFPM overlay and maintainer scripts for the keyring
 .github/workflows/          ci.yml (PR gate, incl. package build/install tests),
@@ -164,7 +164,11 @@ packaging/                  nFPM overlay and maintainer scripts for the keyring
 
 `publish-index.yml` rebuilds the whole site from the product releases each time
 it runs: when a product release dispatches `package-released`, on manual
-dispatch, and weekly to reconcile a missed dispatch. Before indexing anything
+dispatch, and weekly to reconcile a missed dispatch. Each rebuild replaces the
+whole site, so the pool holds only the releases `packages.toml`'s retention
+keeps: the newest two releases of each line. Pages caches the index for up to ten
+minutes, and keeping the previous release means a client reading an index from
+before a release can still download the files it names. Before indexing anything
 it verifies every asset's build attestation (signed by vergil-actions'
 `cd-release.yml` on `main`) and every `.rpm`'s signature, then writes and signs
 the apt and dnf metadata and deploys to GitHub Pages. It signs in the
