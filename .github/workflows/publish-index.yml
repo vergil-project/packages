@@ -27,4 +27,4 @@ jobs:
     # inside the reusable workflow (spec §7.4). `inherit` is required for those
     # environment secrets to reach it (vergil-project/packages#6); the callee is
     # first-party (same org).
-    secrets: inherit  # nosemgrep: yaml.github-actions.security.secrets-inherit.secrets-inherit
+    secrets: inherit
