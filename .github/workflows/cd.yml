@@ -24,4 +24,4 @@ jobs:
     # its `package-signing` environment (vergil-project/packages#6). The callee
     # is first-party (same org); it also needs APP_CLIENT_ID / APP_PRIVATE_KEY
     # for the package-released dispatch (spec §8.2).
-    secrets: inherit  # nosemgrep: yaml.github-actions.security.secrets-inherit.secrets-inherit
+    secrets: inherit

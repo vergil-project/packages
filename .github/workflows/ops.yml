@@ -15,6 +15,6 @@ jobs:
     permissions:
       contents: read
       issues: write
-    secrets:
-      APP_CLIENT_ID: ${{ secrets.APP_CLIENT_ID }}
-      APP_PRIVATE_KEY: ${{ secrets.APP_PRIVATE_KEY }}
+    # The App keys live in the `automation` environment; environment secrets
+    # reach a reusable workflow in another repo only through `inherit`.
+    secrets: inherit
