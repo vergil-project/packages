@@ -18,3 +18,15 @@ jobs:
     # The App keys live in the `automation` environment; environment secrets
     # reach a reusable workflow in another repo only through `inherit`.
     secrets: inherit
+
+  agent-audit:
+    # After the config job, but not skipped when it fails (epic
+    # vergil-project/.github#1384, ruling N0.14).
+    needs: github-config
+    if: ${{ !cancelled() }}
+    uses: vergil-project/vergil-actions/.github/workflows/ops-agent-audit.yml@v2.1
+    permissions:
+      contents: read
+    # The App keys live in the `automation` environment; environment secrets
+    # reach a reusable workflow in another repo only through `inherit`.
+    secrets: inherit
