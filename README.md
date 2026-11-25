@@ -179,14 +179,12 @@ the apt and dnf metadata and deploys to GitHub Pages. It signs in the
 Two signing steps use the repository key, each in its own GitHub environment:
 
 - **Index signing.** `publish-index.yml` signs the apt and dnf metadata in the
-  `index-signing` environment (`develop` only). Its call to the reusable
-  workflow must use `secrets: inherit`: environment secrets reach a job in a
-  cross-repo reusable workflow only that way, and an explicit secrets map
-  leaves them empty ([#6](https://github.com/vergil-project/packages/issues/6)).
+  `index-signing` environment (`develop` only). Its call to vergil-actions'
+  reusable workflow passes `secrets: inherit`, which carries the environment's
+  secrets to that workflow within vergil-project.
 - **Package signing.** The `vergil-archive-keyring` release itself is signed by
   `cd-release.yml`'s package-sign job in the `package-signing` environment,
-  which only `main` can use. `cd.yml` passes `secrets: inherit` for the same
-  reason.
+  which only `main` can use. `cd.yml` passes `secrets: inherit` the same way.
 
 ## Adding a product
 
@@ -200,11 +198,13 @@ To have a product's packages indexed here:
    `main` with:
 
    ```yaml
-   secrets: inherit  # nosemgrep: yaml.github-actions.security.secrets-inherit.secrets-inherit
+   secrets: inherit
    ```
 
-   An explicit secrets map leaves the package-sign job's `PACKAGE_SIGNING_KEY`
-   empty, so `inherit` is required.
+   Within vergil-project, `inherit` carries the `package-signing`
+   environment's `PACKAGE_SIGNING_KEY` to the package-sign job. Signed
+   packages from a repository outside vergil-project are tracked in
+   [vergil-project/.github#1592](https://github.com/vergil-project/.github/issues/1592).
 3. **Configure secrets.** The product repository has a `package-signing`
    environment restricted to `main` that holds `PACKAGE_SIGNING_KEY`, and the
    `APP_CLIENT_ID` / `APP_PRIVATE_KEY` secrets that `cd-release.yml` uses to
