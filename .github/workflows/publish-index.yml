@@ -24,7 +24,7 @@ jobs:
   index:
     uses: vergil-project/vergil-actions/.github/workflows/publish-index.yml@v2.1
     # The signing secrets come from the develop-only `index-signing` environment
-    # inside the reusable workflow (spec §7.4). `inherit` is required for those
-    # environment secrets to reach it (vergil-project/packages#6); the callee is
-    # first-party (same org).
+    # inside the reusable workflow (spec §7.4). `inherit` carries those
+    # environment secrets to it: the callee is first-party (vergil-project) and
+    # allow-listed for `inherit`.
     secrets: inherit
